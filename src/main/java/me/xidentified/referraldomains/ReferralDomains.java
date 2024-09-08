@@ -57,6 +57,7 @@ public final class ReferralDomains extends JavaPlugin {
     private void validateConfigSetup() {
         String apiKey = getConfig().getString("cloudfare-api-key");
         String domain = getConfig().getString("domain");
+        String recordType = getConfig().getString("record-type", "A"); // Default: A
 
         if (apiKey == null || apiKey.equals("<PASTE_YOUR_KEY_HERE>") || apiKey.trim().isEmpty()) {
             getLogger().severe("Cloudflare API key is not set in config.yml. Plugin will not function without it!");
@@ -74,9 +75,9 @@ public final class ReferralDomains extends JavaPlugin {
             String cnameContent = getConfig().getString("cname-content");
             if (cnameContent == null || cnameContent.trim().isEmpty()) {
                 getLogger().severe("CNAME record type selected, but no CNAME content set in config.yml!");
+            }
         }
     }
-
 
     public CompletableFuture<Boolean> createDNSRecord(String playerName) {
         String apiKey = getConfig().getString("cloudfare-api-key");
