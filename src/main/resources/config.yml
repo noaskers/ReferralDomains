@@ -6,6 +6,8 @@ zone-id: <ZONE_ID_HERE>
 server-ip: 0.0.0.0
 server-port: 25565
 domain: "archforge.net"
+record-type: "A" # or "CNAME"
+# cname-content: "dynDNS or other domain" # Domain for CNAME-Record
 
 referrer-rewards:
   - 'give {player} diamond 5'

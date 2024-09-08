@@ -66,19 +66,38 @@ public final class ReferralDomains extends JavaPlugin {
             getLogger().warning("Server domain is not set in config.yml. The plugin may not function correctly.");
         }
 
+        if (!recordType.equalsIgnoreCase("A") && !recordType.equalsIgnoreCase("CNAME")) {
+            getLogger().severe("Invalid DNS record type in config.yml. Must be 'A' or 'CNAME'.");
+        }
+
+        if (recordType.equalsIgnoreCase("CNAME")) {
+            String cnameContent = getConfig().getString("cname-content");
+            if (cnameContent == null || cnameContent.trim().isEmpty()) {
+                getLogger().severe("CNAME record type selected, but no CNAME content set in config.yml!");
+        }
     }
+
 
     public CompletableFuture<Boolean> createDNSRecord(String playerName) {
         String apiKey = getConfig().getString("cloudfare-api-key");
-        String serverIP = getConfig().getString("server-ip");
+        String recordType = getConfig().getString("record-type", "A"); // Default: A
         String serverDomain = getConfig().getString("domain");
         String zoneId = getConfig().getString("zone-id");
-
+        
         String apiUrl = "https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records";
-        String aRecordName = playerName.toLowerCase() + "." + serverDomain;
-        debugLog("Creating A record for " + aRecordName);
+        String recordName = playerName.toLowerCase() + "." + serverDomain;
 
-        return CompletableFuture.supplyAsync(() -> createRecord(apiUrl, apiKey, "A", aRecordName, serverIP));
+        String content;
+        if ("A".equalsIgnoreCase(recordType)) {
+            content = getConfig().getString("server-ip");
+        } else if ("CNAME".equalsIgnoreCase(recordType)) {
+            content = getConfig().getString("cname-content");
+        } else {
+            getLogger().severe("Unsupported record type: " + recordType);
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return CompletableFuture.supplyAsync(() -> createRecord(apiUrl, apiKey, recordType, recordName, content));
     }
 
     private boolean createRecord(String apiUrl, String apiKey, String type, String name, String content) {
